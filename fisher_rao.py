@@ -73,8 +73,8 @@ def estimate_corr_dim(
         C_vals.append(C_r)
     
     # 6) Fit log–log for slope = dimension
-    log_r = np.log(r_vals)
-    log_C = np.log(C_vals)
+    log_r = np.log10(r_vals)
+    log_C = np.log10(C_vals)
     slope, intercept, _, _, stderr = stats.linregress(log_r, log_C)
     
     return slope, r_vals, C_vals, eta
@@ -105,10 +105,10 @@ model = GPT2LMHeadModel.from_pretrained('gpt2').to(device).eval()
 
 MAX_CTX = 512  # hard cap
 TOP_P = 0.95
-STEPS = 500
+STEPS = 200
 BATCH_SIZE = 64
 
-enc = tokenizer("This essay is", return_tensors='pt').to(device)
+enc = tokenizer("This text is about", return_tensors='pt').to(device)
 enc['input_ids'] = trim_ctx(enc['input_ids'], MAX_CTX)
 enc['attention_mask'] = torch.ones_like(enc['input_ids'])
 
@@ -194,7 +194,7 @@ for eta in etas:
 # compute average slope
 nu_avg = np.mean(slopes)
 
-# 4) plot all curves
+# plot all curves
 plt.figure(figsize=(6,4))
 for eta, (D_eta, r_eta, C_eta) in results.items():
     plt.loglog(r_eta, C_eta, marker='o', linestyle='-',
@@ -209,11 +209,10 @@ plt.text(
     bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray")
 )
 
-
 plt.xlabel(r"$\varepsilon$")
 plt.ylabel(r"$C(\varepsilon)$")
 plt.title(f"Correlation dimension (D = {nu_avg:.2f}) for different entropy filters (Fisher–Rao)")
 plt.legend(loc="upper left", fontsize=9)
 plt.tight_layout()
-plt.savefig(f"fisher_rao_{STEPS}_words_top_p_{TOP_P}.png")
+plt.savefig(f"fisher_rao_{STEPS}_words_top_p_{TOP_P}.png", dpi=300)
 plt.show()

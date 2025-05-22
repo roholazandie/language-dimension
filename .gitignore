@@ -200,3 +200,5 @@ train_log*
 /logs/
 
 *.csv
+
+*.png
